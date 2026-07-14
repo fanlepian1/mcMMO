@@ -21,6 +21,10 @@ on:
     - 'src/**'
     - 'pom.xml'
 
+  # Run daily at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 * * *'
+
 jobs:
   compile:
     name: Maven compiler
@@ -47,6 +51,14 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    # 4. Build via Maven 
+    # 4. Build via Maven
     - name: Build via Maven
-      run: mvn verify -B -Psql-tests --file pom.xml -DdisableXmlReport=true
+      run: mvn package -B -Psql-tests --file pom.xml -DdisableXmlReport=true
+
+    # 5. Upload the compiled plugin as an artifact
+    - name: Upload plugin JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: mcmmo-plugin
+        path: target/*.jar
+        retention-days: 30
